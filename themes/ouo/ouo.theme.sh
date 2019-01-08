@@ -31,6 +31,10 @@ scm_prompt() {
     fi
 }
 
+rightprompt() {
+    printf "%*s" $COLUMNS "$1"
+}
+
 ouo_prompt() {
     # ps_host="${bold_blue}\h${normal}";
     # ps_user="${green}\u${normal}";
@@ -43,15 +47,27 @@ ouo_prompt() {
             ps_user_mark="${green}$ ${normal}";
     fi
     ps_root_mark="${green}# ${normal}"
-    ps_path="${yellow}\w${normal}";
+    ps_path="${yellow}\w${normal}"
 
     # make it work
+    # PS1="\n$(clock_prompt)$ps_path $(scm_prompt)"
+    PS1L="$ps_path $(scm_prompt)"
+    PS1R="$(clock_prompt)"
+    # Ref: https://wiki.archlinux.org/index.php/Bash/Prompt_customization#Right-justified_text
+    PS1=$(printf "\n$(tput sc; rightprompt $PS1R; tput rc)%s" "$PS1L")
+
+    # case "$HAS_GOTO" in
+    #     1) PS1="${PS1}\n${GOTO_PROMPT}"
+    #         printf "OuO"
+    #         ;;
+    # esac
+
     case $(id -u) in
         # 0) PS1="$ps_root@$ps_host$(scm_prompt):$ps_path\n$ps_root_mark"
-        0) PS1="\n$(clock_prompt)$ps_path $(scm_prompt)\n$ps_root_mark"
+        0) PS1="${PS1}\n$ps_root_mark"
             ;;
         # *) PS1="$ps_user@$ps_host$(scm_prompt):$ps_path\n$ps_user_mark"
-        *) PS1="\n$(clock_prompt)$ps_path $(scm_prompt)\n$ps_user_mark"
+        *) PS1="${PS1}\n$ps_user_mark"
             ;;
     esac
 }
