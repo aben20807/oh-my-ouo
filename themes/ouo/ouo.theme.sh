@@ -36,7 +36,7 @@ rightprompt() {
 
 virtualenv_prompt() {
     if [[ -n $VIRTUAL_ENV ]]; then
-        printf "[env]"
+        printf "[$(basename -- $VIRTUAL_ENV)]"
     fi
 }
 
