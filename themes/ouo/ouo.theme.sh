@@ -37,6 +37,8 @@ rightprompt() {
 virtualenv_prompt() {
     if [[ -n $VIRTUAL_ENV ]]; then
         printf "[$(basename -- $VIRTUAL_ENV)]"
+    elif [[ -n $CONDA_DEFAULT_ENV ]]; then
+        printf "[$(basename -- $CONDA_DEFAULT_ENV)]"
     fi
 }
 
