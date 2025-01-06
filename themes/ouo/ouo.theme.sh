@@ -36,9 +36,9 @@ rightprompt() {
 
 virtualenv_prompt() {
     if [[ -n $VIRTUAL_ENV ]]; then
-        printf "[$(basename -- $VIRTUAL_ENV)]"
+	    printf "[$(basename -- $VIRTUAL_ENV)] "
     elif [[ -n $CONDA_DEFAULT_ENV ]]; then
-        printf "[$(basename -- $CONDA_DEFAULT_ENV)]"
+        printf "[$(basename -- $CONDA_DEFAULT_ENV)] "
     fi
 }
 
@@ -59,40 +59,41 @@ short_pwd() {
 }
 
 ouo_prompt() {
-    # ps_host="${bold_blue}\h${normal}";
-    # ps_user="${green}\u${normal}";
-    # ps_root="${red}\u${red}";
-    # ouo="${green}ouo${normal}";
-    if [ $? -ne 0 ]
+    local RC="$?"
+    local ps_host="$(tput setaf 221)\h${normal}"
+    local ps_user="$(tput setaf 221)\u@${normal}"
+    local ps_root="$(tput setaf 221)\u@${normal}"
+    local ps_user_mark="${green}$ ${normal}"
+    local ps_root_mark="${green}# ${normal}"
+    if [ $RC -ne 0 ]
     then
-        ps_user_mark="${red}$ ${normal}";
-    else
-        ps_user_mark="${green}$ ${normal}";
+        ps_user_mark="${red}$ ${normal}"
+        ps_root_mark="${red}# ${normal}"
     fi
-    ps_root_mark="${green}# ${normal}"
-    venv="${cyan}$(virtualenv_prompt)${normal}"
-    ps_path="${yellow}$(short_pwd 5)${normal}"
+    
+    local venv="${cyan}$(virtualenv_prompt)${normal}"
+    local ps_path="$(tput setaf 39)$(short_pwd 5)${normal}"
 
-    # make it work
-    # PS1="\n$(clock_prompt)$ps_path $(scm_prompt)"
-    PS1L="$venv $ps_path $(scm_prompt)"
+    # Left
+    case $(id -u) in
+        0) PS1L="$venv$ps_root$ps_host $ps_path $(scm_prompt)"
+        ;;
+        *) PS1L="$venv$ps_user$ps_host $ps_path $(scm_prompt)"
+        ;;
+    esac
+
+    # Right
     PS1R="$(clock_prompt)"
+    
     # Ref: https://wiki.archlinux.org/index.php/Bash/Prompt_customization#Right-justified_text
+    # Combine
     PS1=$(printf "\n$(tput sc; rightprompt $PS1R; tput rc)%s" "$PS1L")
 
-    # case "$HAS_GOTO" in
-    #     1) PS1="${PS1}\n${GOTO_PROMPT}"
-    #         printf "OuO"
-    #         ;;
-    # esac
-
     case $(id -u) in
-        # 0) PS1="$ps_root@$ps_host$(scm_prompt):$ps_path\n$ps_root_mark"
-            0) PS1="${PS1}\n$ps_root_mark"
-            ;;
-        # *) PS1="$ps_user@$ps_host$(scm_prompt):$ps_path\n$ps_user_mark"
-            *) PS1="${PS1}\n$ps_user_mark"
-            ;;
+        0) PS1="${PS1}\n$ps_root_mark"
+        ;;
+        *) PS1="${PS1}\n$ps_user_mark"
+        ;;
     esac
 }
 
